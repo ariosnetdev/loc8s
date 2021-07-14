@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: sidecar-dind-
+spec:
+  entrypoint: dind-sidecar-example
+  templates:
+  - name: dind-sidecar-example
+    container:
+      image: gcr.io/kaniko-project/executor
+      args: ["--skip-tls-verify", "--insecure", "--insecure-pull", "--dockerfile=/data/hello-app/Dockerfile", "--context=/data/hello-app/", "--destination=docker-registry-service:5000/hello-world-go:0.1.0"]
+      volumeMounts:
+      - name: foo
+        mountPath: /data
+    volumes:
+    - name: foo
+      hostPath:
+        path: /data

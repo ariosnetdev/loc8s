@@ -1,0 +1,73 @@
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: http-bin-deployment
+  labels:
+    app: http-bin
+spec:
+  selector:
+    matchLabels:
+      app: http-bin
+  template:
+    metadata:
+      labels:
+        app: http-bin
+    spec:
+      containers:
+        - name: http-bin
+          image: localhost:30577/hello-world-go:0.1.0
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-bin
+spec:
+  selector:
+    app: http-bin
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-bin-ingress
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /httpbin
+          pathType: Prefix
+          backend:
+            service:
+              name: http-bin
+              port: 
+                number: 80
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+  name: pv-data
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-data
+spec:
+  volumeName: pv-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
